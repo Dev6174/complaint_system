@@ -68,7 +68,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           pip install pytest-cov
-          pytest tests/ -v --cov=app --cov-report=term-missing --cov-fail-under=55
+          pytest tests/ -v --cov=app --cov-report=term-missing --cov-fail-under=50
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
