@@ -46,7 +46,7 @@ jobs:
     env:
       APP_ENV: test
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      DATABASE_URL: sqlite:///:memory:
+      DATABASE_URL: "sqlite:///:memory:"
       REDIS_URL: ""
       AI_CLASSIFIER_API_KEY: ""
       ALLOWED_ORIGINS: "http://localhost:8000"
@@ -83,7 +83,7 @@ jobs:
     env:
       APP_ENV: test
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      DATABASE_URL: sqlite:///./ci_test.db
+      DATABASE_URL: "sqlite:///./ci_test.db"
       REDIS_URL: ""
       AI_CLASSIFIER_API_KEY: ""
       ALLOWED_ORIGINS: "http://localhost:5000"
