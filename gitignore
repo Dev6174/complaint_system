@@ -1,0 +1,52 @@
+# Environment — NEVER commit real secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Database files — use Neon in production, never commit local DB
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads — stored in object storage (S3/MinIO) in production
+uploads/
+
+# Coverage
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Alembic — keep migrations/ folder but not the cache
+migrations/__pycache__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Logs
+*.log
+logs/
