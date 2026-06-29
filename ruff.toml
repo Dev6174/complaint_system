@@ -1,22 +1,20 @@
-[tool.ruff]
 target-version = "py313"
 line-length = 100
 
-[tool.ruff.lint]
+[lint]
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes (undefined names, unused imports)
-    "I",   # isort
-    "B",   # flake8-bugbear (common bugs)
-    "UP",  # pyupgrade (modern Python syntax)
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "UP",
 ]
 ignore = [
-    "E501",  # line too long — handled by formatter
-    "B008",  # do not perform function calls in default arguments
-             # (FastAPI Depends() pattern triggers this)
-    "UP007", # Use X | Y for union — not always cleaner in FastAPI schemas
+    "E501",
+    "B008",
+    "UP007",
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101"]  # Allow assert statements in tests
+[lint.per-file-ignores]
+"tests/*" = ["S101"]
