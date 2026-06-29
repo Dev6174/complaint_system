@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+
 @pytest.mark.skipif(
     os.getenv("APP_ENV") == "test",
     reason="Requires Redis/Celery broker"
