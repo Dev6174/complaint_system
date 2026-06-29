@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from app.config import settings
 from app.database import Base, get_db
 from app.main import app
+from app.rate_limiter import reset_rate_limiter
 
 # In-memory SQLite for isolated test runs
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -19,8 +20,6 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 settings.DATABASE_URL = SQLALCHEMY_DATABASE_URL
 settings.ACCESS_TOKEN_EXPIRE_MINUTES = 5
 settings.VERIFICATION_THRESHOLD = 2  # Lower for easier testing
-
-from app.rate_limiter import reset_rate_limiter
 
 
 @pytest.fixture(scope="function", autouse=True)
