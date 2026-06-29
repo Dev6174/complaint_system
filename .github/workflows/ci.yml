@@ -13,16 +13,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: "pip"
-
       - name: Install pip-audit
         run: pip install pip-audit
-
       - name: Run vulnerability scan
         run: pip-audit -r requirements.txt --strict
 
@@ -32,16 +29,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: "pip"
-
       - name: Install ruff
         run: pip install ruff
-
       - name: Run ruff
         run: ruff check app/ tests/
 
@@ -63,24 +57,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: "pip"
-
       - name: Install dependencies
         run: pip install -r requirements.txt
-
       - name: Run tests with coverage
         run: |
           pip install pytest-cov
-          pytest tests/ -v \
-            --cov=app \
-            --cov-report=term-missing \
-            --cov-fail-under=60
-
+          pytest tests/ -v --cov=app --cov-report=term-missing --cov-fail-under=60
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
@@ -103,20 +90,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: "pip"
-
       - name: Install dependencies
         run: pip install -r requirements.txt
-
       - name: Start server in background
         run: |
           python -m uvicorn app.main:app --host 127.0.0.1 --port 5000 &
           sleep 3
-
       - name: Check security headers
         run: python .github/scripts/check_headers.py
