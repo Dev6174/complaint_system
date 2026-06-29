@@ -1,11 +1,11 @@
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi.testclient import TestClient
 
+from app.config import settings
 from app.database import Base, get_db
 from app.main import app
-from app.config import settings
 
 # In-memory SQLite for isolated test runs
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -22,6 +22,7 @@ settings.VERIFICATION_THRESHOLD = 2  # Lower for easier testing
 
 from app.rate_limiter import reset_rate_limiter
 
+
 @pytest.fixture(scope="function", autouse=True)
 def init_db():
     reset_rate_limiter()
@@ -34,9 +35,9 @@ def db_session():
     connection = engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
-    
+
     yield session
-    
+
     session.close()
     transaction.rollback()
     connection.close()
@@ -48,7 +49,7 @@ def client(db_session):
             yield db_session
         finally:
             pass
-            
+
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
     app.dependency_overrides.clear()

@@ -1,23 +1,30 @@
 # pyrefly: ignore [missing-import]
-from typing import Optional
 
 from celery.result import AsyncResult
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    Query,
+    Request,
+    UploadFile,
+)
 from sqlalchemy.orm import Session
 
+from app.auth import RoleChecker, get_current_user, verify_csrf
 from app.database import get_db
 from app.models import User
-from app.schemas import IssueResponse, IssueUpdate, IssueResolve
-from app.auth import get_current_user, RoleChecker, verify_csrf
 from app.rate_limiter import rate_limit_ip
+from app.schemas import IssueResolve, IssueResponse, IssueUpdate
 from app.services.issue_service import (
-    validate_and_save_upload,
     create_issue,
-    list_issues,
     get_issue,
-    update_issue,
-    resolve_issue,
     get_issue_history,
+    list_issues,
+    resolve_issue,
+    update_issue,
+    validate_and_save_upload,
 )
 from app.tasks.classification_task import run_classification
 
@@ -82,7 +89,7 @@ async def report_issue(
     priority: str = Form(...),
     latitude: float = Form(...),
     longitude: float = Form(...),
-    file: Optional[UploadFile] = File(None),
+    file: UploadFile | None = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     _csrf=Depends(verify_csrf),
@@ -108,10 +115,10 @@ async def report_issue(
 
 @router.get("", response_model=dict)
 def get_issues(
-    search: Optional[str] = Query(None),
-    category: Optional[str] = Query(None),
-    priority: Optional[str] = Query(None),
-    status_filter: Optional[str] = Query(None, alias="status"),
+    search: str | None = Query(None),
+    category: str | None = Query(None),
+    priority: str | None = Query(None),
+    status_filter: str | None = Query(None, alias="status"),
     sort_by: str = Query("created_at"),
     order: str = Query("desc"),
     page: int = Query(1, ge=1),

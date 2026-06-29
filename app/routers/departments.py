@@ -1,9 +1,10 @@
 # pyrefly: ignore [missing-import]
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
+
+from app.auth import RoleChecker, get_current_user, verify_csrf
 from app.database import get_db
-from app.models import User, Issue
-from app.auth import get_current_user, RoleChecker, verify_csrf
+from app.models import Issue, User
 from app.services.audit_service import log_action
 
 router = APIRouter(prefix="/api/departments", tags=["Departments"])
@@ -43,7 +44,7 @@ def assign_department(
 
     old_dept = issue.assigned_department
     issue.assigned_department = department
-    
+
     # Auto transition to "In Progress" if still Open
     old_status = issue.status
     if issue.status == "Open":

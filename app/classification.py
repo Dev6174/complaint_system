@@ -1,9 +1,10 @@
 # pyrefly: ignore [missing-import]
-import httpx
 import logging
-import time
-from datetime import datetime, timezone
-from typing import Dict, Any, Tuple
+from datetime import UTC, datetime
+from typing import Any
+
+import httpx
+
 from app.config import settings
 
 logger = logging.getLogger("complaint_system.classification")
@@ -14,7 +15,7 @@ class CircuitBreaker:
         self.recovery_timeout_seconds = recovery_timeout_seconds
         self.failure_count = 0
         self.state = "CLOSED"  # CLOSED, OPEN
-        self.last_state_change = datetime.now(timezone.utc)
+        self.last_state_change = datetime.now(UTC)
 
     def record_success(self):
         self.failure_count = 0
@@ -25,13 +26,13 @@ class CircuitBreaker:
         logger.warning(f"Circuit breaker failure registered: {self.failure_count}/{self.failure_threshold}")
         if self.failure_count >= self.failure_threshold:
             self.state = "OPEN"
-            self.last_state_change = datetime.now(timezone.utc)
-            logger.error(f"Circuit breaker tripped to OPEN state. Fallback active.")
+            self.last_state_change = datetime.now(UTC)
+            logger.error("Circuit breaker tripped to OPEN state. Fallback active.")
 
     def allow_request(self) -> bool:
         if self.state == "OPEN":
             # Check if recovery timeout has passed
-            elapsed = (datetime.now(timezone.utc) - self.last_state_change).total_seconds()
+            elapsed = (datetime.now(UTC) - self.last_state_change).total_seconds()
             if elapsed > self.recovery_timeout_seconds:
                 logger.info("Circuit breaker entering HALF-OPEN state (allowing test request)")
                 # Let request pass, state stays OPEN until success or failure
@@ -42,13 +43,13 @@ class CircuitBreaker:
 # Instantiate global circuit breaker
 classification_breaker = CircuitBreaker()
 
-def classify_issue_local(title: str, description: str) -> Dict[str, Any]:
+def classify_issue_local(title: str, description: str) -> dict[str, Any]:
     """
     Built-in rule/keyword-based fallback classifier.
     Never blocks submission, degrades gracefully.
     """
     text = (title + " " + description).lower()
-    
+
     # Priority defaults
     category = "Other"
     priority = "Medium"
@@ -80,7 +81,7 @@ def classify_issue_local(title: str, description: str) -> Dict[str, Any]:
         "reasoning": reasoning
     }
 
-async def suggest_category_and_priority(title: str, description: str, has_attachment: bool = False) -> Dict[str, Any]:
+async def suggest_category_and_priority(title: str, description: str, has_attachment: bool = False) -> dict[str, Any]:
     """
     Categorizes the issue using the configured automated categorization service.
     If unavailable or timed out, falls back to the local keyword classifier.
@@ -100,7 +101,7 @@ async def suggest_category_and_priority(title: str, description: str, has_attach
             "Authorization": f"Bearer {settings.AI_CLASSIFIER_API_KEY}",
             "Content-Type": "application/json"
         }
-        
+
         # 3 second timeout as per security/load handling
         async with httpx.AsyncClient(timeout=3.0) as client:
             response = await client.post(
@@ -108,7 +109,7 @@ async def suggest_category_and_priority(title: str, description: str, has_attach
                 json=payload,
                 headers=headers
             )
-            
+
             if response.status_code == 200:
                 data = response.json()
                 classification_breaker.record_success()

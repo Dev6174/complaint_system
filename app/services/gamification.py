@@ -1,8 +1,9 @@
 # pyrefly: ignore [missing-import]
 import json
-from typing import List, Tuple
+
 from sqlalchemy.orm import Session
-from app.models import User, Issue
+
+from app.models import User
 
 # Point awards definitions
 POINTS_RULES = {
@@ -19,7 +20,7 @@ BADGES_RULES = {
     "Super Citizen": "Awarded for achieving 100 or more activity points."
 }
 
-def award_points(db: Session, user: User, action_type: str) -> List[str]:
+def award_points(db: Session, user: User, action_type: str) -> list[str]:
     """
     Awards points to the user and checks for badge eligibility.
     Returns list of newly unlocked badge names.
@@ -29,13 +30,13 @@ def award_points(db: Session, user: User, action_type: str) -> List[str]:
         return []
 
     user.points += points_to_add
-    
+
     # Load current badges
     try:
         current_badges = json.loads(user.badges)
     except Exception:
         current_badges = []
-        
+
     newly_unlocked = []
 
     # Check "First Report" badge

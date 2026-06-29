@@ -1,7 +1,8 @@
 # pyrefly: ignore [missing-import]
-from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Optional, List
 from datetime import datetime
+
+from pydantic import BaseModel, Field, field_validator
+
 
 # --- User Schemas ---
 class UserBase(BaseModel):
@@ -44,7 +45,7 @@ class UserResponse(BaseModel):
     email: str
     role: str
     points: int
-    badges: List[str] = []
+    badges: list[str] = []
     created_at: datetime
 
     @field_validator("badges", mode="before")
@@ -82,15 +83,15 @@ class IssueCreate(IssueBase):
     pass
 
 class IssueUpdate(BaseModel):
-    title: Optional[str] = Field(None, min_length=5, max_length=150)
-    description: Optional[str] = Field(None, min_length=10, max_length=1000)
-    category: Optional[str] = Field(None, min_length=2, max_length=100)
-    priority: Optional[str] = Field(None, min_length=3, max_length=20)
-    status: Optional[str] = Field(None)
+    title: str | None = Field(None, min_length=5, max_length=150)
+    description: str | None = Field(None, min_length=10, max_length=1000)
+    category: str | None = Field(None, min_length=2, max_length=100)
+    priority: str | None = Field(None, min_length=3, max_length=20)
+    status: str | None = Field(None)
 
     @field_validator("priority")
     @classmethod
-    def validate_priority(cls, v: Optional[str]) -> Optional[str]:
+    def validate_priority(cls, v: str | None) -> str | None:
         if v is None:
             return v
         allowed = ["Low", "Medium", "High", "Urgent"]
@@ -100,7 +101,7 @@ class IssueUpdate(BaseModel):
 
     @field_validator("status")
     @classmethod
-    def validate_status(cls, v: Optional[str]) -> Optional[str]:
+    def validate_status(cls, v: str | None) -> str | None:
         if v is None:
             return v
         allowed = ["Open", "In Progress", "Resolved", "Closed", "Reopened"]
@@ -114,7 +115,7 @@ class IssueResolve(BaseModel):
 class IssueResponse(BaseModel):
     id: int
     reporter_id: int
-    reporter_name: Optional[str] = None
+    reporter_name: str | None = None
     title: str
     description: str
     category: str
@@ -122,11 +123,11 @@ class IssueResponse(BaseModel):
     latitude: float
     longitude: float
     status: str
-    attachment_filename: Optional[str]
+    attachment_filename: str | None
     verification_count: int
-    assigned_department: Optional[str]
-    resolution_notes: Optional[str]
-    resolved_at: Optional[datetime]
+    assigned_department: str | None
+    resolution_notes: str | None
+    resolved_at: datetime | None
     created_at: datetime
 
     class Config:
@@ -149,14 +150,14 @@ class VerificationResponse(BaseModel):
 class FeedbackCreate(BaseModel):
     issue_id: int
     rating: int = Field(..., ge=1, le=5)
-    comment: Optional[str] = Field(None, max_length=500)
+    comment: str | None = Field(None, max_length=500)
 
 class FeedbackResponse(BaseModel):
     id: int
     issue_id: int
     user_id: int
     rating: int
-    comment: Optional[str]
+    comment: str | None
     created_at: datetime
 
     class Config:
@@ -165,11 +166,11 @@ class FeedbackResponse(BaseModel):
 # --- Audit Log Schemas ---
 class AuditLogResponse(BaseModel):
     id: int
-    user_id: Optional[int]
-    user_name: Optional[str] = None
+    user_id: int | None
+    user_name: str | None = None
     action: str
     details: str
-    ip_address: Optional[str]
+    ip_address: str | None
     timestamp: datetime
 
     class Config:

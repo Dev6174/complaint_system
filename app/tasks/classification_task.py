@@ -1,11 +1,12 @@
 # pyrefly: ignore [missing-import]
 import logging
-import httpx
-from typing import Dict, Any
+from typing import Any
 
-from app.worker import celery_app
+import httpx
+
+from app.classification import classification_breaker, classify_issue_local
 from app.config import settings
-from app.classification import classify_issue_local, classification_breaker
+from app.worker import celery_app
 
 logger = logging.getLogger("complaint_system.tasks.classification")
 
@@ -35,7 +36,7 @@ def run_classification(
     title: str,
     description: str,
     has_attachment: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Runs AI classification in a background worker.
     Falls back to local keyword classifier on any failure, matching the

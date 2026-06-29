@@ -1,11 +1,10 @@
 # pyrefly: ignore [missing-import]
 import logging
-from typing import Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.models import User, Issue, Feedback
+from app.models import Feedback, Issue, User
 from app.services.audit_service import log_action
 from app.services.gamification import award_points
 
@@ -17,8 +16,8 @@ def submit_feedback(
     issue_id: int,
     reporter: User,
     rating: int,
-    comment: Optional[str],
-    ip_address: Optional[str],
+    comment: str | None,
+    ip_address: str | None,
 ) -> Feedback:
     """
     Submits resolution feedback for a resolved/closed issue.

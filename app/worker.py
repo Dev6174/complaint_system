@@ -1,6 +1,8 @@
 # pyrefly: ignore [missing-import]
 import logging
+
 from celery import Celery
+
 from app.config import settings
 
 logger = logging.getLogger("complaint_system.worker")

@@ -1,6 +1,5 @@
 # pyrefly: ignore [missing-import]
 import logging
-from typing import Optional
 
 from app.worker import celery_app
 
@@ -39,13 +38,13 @@ def generate_report(report_type: str) -> dict:
 
     # Import here to avoid importing the full app at module load time in the worker
     from app.database import SessionLocal
-    from app.models import Issue, Feedback
+    from app.models import Feedback, Issue
+    from app.routers.departments import DEPARTMENTS
     from app.services.report_writer import (
-        generate_issues_csv,
         generate_department_csv,
         generate_feedback_csv,
+        generate_issues_csv,
     )
-    from app.routers.departments import DEPARTMENTS
 
     db = SessionLocal()
     try:

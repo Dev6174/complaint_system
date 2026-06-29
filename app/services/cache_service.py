@@ -1,9 +1,10 @@
 # pyrefly: ignore [missing-import]
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import redis
+
 from app.config import settings
 
 logger = logging.getLogger("complaint_system.cache")
@@ -13,7 +14,7 @@ logger = logging.getLogger("complaint_system.cache")
 # cache operations silently no-op instead of crashing the app — caching is
 # a performance optimization, not a hard dependency.
 # ---------------------------------------------------------------------------
-_redis_client: Optional[redis.Redis] = None
+_redis_client: redis.Redis | None = None
 
 if settings.REDIS_URL:
     try:
@@ -32,7 +33,7 @@ else:
     logger.info("REDIS_URL not set, caching disabled")
 
 
-def get_cached(key: str) -> Optional[Any]:
+def get_cached(key: str) -> Any | None:
     """Returns the cached value for `key`, or None on miss / Redis unavailable."""
     if not _redis_client:
         return None

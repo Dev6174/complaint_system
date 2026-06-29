@@ -1,7 +1,19 @@
 # pyrefly: ignore [missing-import]
-from sqlalchemy import Column, Integer, String, Float, Text, DateTime, ForeignKey, UniqueConstraint, func
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import relationship
+
 from app.database import Base
+
 
 class User(Base):
     __tablename__ = "users"

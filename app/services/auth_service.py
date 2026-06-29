@@ -1,12 +1,11 @@
 # pyrefly: ignore [missing-import]
 import logging
-from typing import Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.auth import create_access_token, hash_password, verify_password
 from app.models import User
-from app.auth import hash_password, verify_password, create_access_token
 from app.services.audit_service import log_action
 
 logger = logging.getLogger("complaint_system.auth")
@@ -18,7 +17,7 @@ def create_user(
     email: str,
     password: str,
     requested_role: str,
-    ip_address: Optional[str],
+    ip_address: str | None,
 ) -> User:
     """
     Registers a new user. First user in the system is automatically Admin.
@@ -63,7 +62,7 @@ def authenticate_user(
     db: Session,
     email: str,
     password: str,
-    ip_address: Optional[str],
+    ip_address: str | None,
 ) -> tuple[User, str]:
     """
     Verifies credentials and returns (user, access_token).
@@ -96,7 +95,7 @@ def change_user_password(
     user: User,
     old_password: str,
     new_password: str,
-    ip_address: Optional[str],
+    ip_address: str | None,
 ) -> None:
     """
     Validates old password and updates hash.

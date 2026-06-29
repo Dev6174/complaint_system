@@ -1,6 +1,3 @@
-import pytest
-from app.models import User
-from app.auth import hash_password
 
 def test_signup_and_login(client, db_session):
     # Signup Citizen

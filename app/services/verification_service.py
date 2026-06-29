@@ -1,15 +1,14 @@
 # pyrefly: ignore [missing-import]
 import logging
-from typing import Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.models import User, Issue, Verification
+from app.models import Issue, User, Verification
 from app.services.audit_service import log_action
 from app.services.gamification import award_points
-from app.tasks.notification_task import send_notification, NOTIF_ESCALATED, NOTIF_VERIFIED
+from app.tasks.notification_task import NOTIF_ESCALATED, NOTIF_VERIFIED, send_notification
 
 logger = logging.getLogger("complaint_system.verification")
 
@@ -37,7 +36,7 @@ def submit_verification(
     db: Session,
     issue_id: int,
     verifier: User,
-    ip_address: Optional[str],
+    ip_address: str | None,
 ) -> Verification:
     issue = db.query(Issue).filter(Issue.id == issue_id).first()
     if not issue:

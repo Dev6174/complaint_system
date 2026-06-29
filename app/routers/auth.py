@@ -1,17 +1,17 @@
 # pyrefly: ignore [missing-import]
 import secrets
 
-from fastapi import APIRouter, Depends, Response, Request, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from sqlalchemy.orm import Session
 
+from app.auth import get_current_user, verify_csrf
 from app.config import settings
 from app.database import get_db
 from app.models import User
-from app.schemas import UserCreate, UserLogin, UserResponse, PasswordChange
-from app.auth import get_current_user, verify_csrf
-from app.rate_limiter import rate_limit_ip, is_rate_limited
+from app.rate_limiter import is_rate_limited, rate_limit_ip
+from app.schemas import PasswordChange, UserCreate, UserLogin, UserResponse
 from app.services.audit_service import log_action
-from app.services.auth_service import create_user, authenticate_user, change_user_password
+from app.services.auth_service import authenticate_user, change_user_password, create_user
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 

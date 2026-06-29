@@ -1,16 +1,21 @@
 # pyrefly: ignore [missing-import]
-from datetime import datetime, timedelta, timezone
+import io
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-import io
 
+from app.auth import RoleChecker, get_current_user
 from app.database import get_db
-from app.models import User, Issue, Feedback, AuditLog
-from app.auth import get_current_user, RoleChecker
-from app.services.report_writer import generate_issues_csv, generate_department_csv, generate_feedback_csv
+from app.models import Feedback, Issue, User
 from app.routers.departments import DEPARTMENTS
+from app.services.report_writer import (
+    generate_department_csv,
+    generate_feedback_csv,
+    generate_issues_csv,
+)
 
 router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 
@@ -24,13 +29,13 @@ def get_dashboard_data(
     """
     # 1. Counts by Status
     status_counts = dict(db.query(Issue.status, func.count(Issue.id)).group_by(Issue.status).all())
-    
+
     # 2. Counts by Category
     category_counts = dict(db.query(Issue.category, func.count(Issue.id)).group_by(Issue.category).all())
-    
+
     # 3. Counts by Priority
     priority_counts = dict(db.query(Issue.priority, func.count(Issue.id)).group_by(Issue.priority).all())
-    
+
     # 4. Map view: Open & In Progress issues
     open_map_issues = db.query(Issue).filter(Issue.status.in_(["Open", "In Progress", "Reopened"])).all()
     map_data = [{
@@ -70,7 +75,7 @@ def get_dashboard_data(
         Issue.priority.in_(["High", "Urgent"]),
         Issue.created_at < three_days_ago
     ).all()
-    
+
     at_risk_list = [{
         "id": issue.id,
         "title": issue.title,
@@ -101,34 +106,34 @@ def export_reports(
         issues = db.query(Issue).all()
         csv_content = generate_issues_csv(issues)
         filename = "all_issues_summary.csv"
-        
+
     elif report_type == "pending":
         issues = db.query(Issue).filter(Issue.status.in_(["Open", "In Progress", "Reopened"])).all()
         csv_content = generate_issues_csv(issues)
         filename = "pending_issues.csv"
-        
+
     elif report_type == "resolved":
         issues = db.query(Issue).filter(Issue.status.in_(["Resolved", "Closed"])).all()
         csv_content = generate_issues_csv(issues)
         filename = "resolved_issues.csv"
-        
+
     elif report_type == "department":
         # Calculate stats per department
         stats = []
         for dept in DEPARTMENTS:
             total = db.query(Issue).filter(Issue.assigned_department == dept).count()
             resolved = db.query(Issue).filter(
-                Issue.assigned_department == dept, 
+                Issue.assigned_department == dept,
                 Issue.status.in_(["Resolved", "Closed"])
             ).count()
             pending = total - resolved
-            
+
             # Avg feedback rating for this dept
             ratings = db.query(Feedback.rating).join(Issue).filter(
                 Issue.assigned_department == dept
             ).all()
             avg_rating = sum([r[0] for r in ratings]) / len(ratings) if ratings else 0.0
-            
+
             stats.append({
                 "department": dept,
                 "total": total,
@@ -138,18 +143,18 @@ def export_reports(
             })
         csv_content = generate_department_csv(stats)
         filename = "department_performance.csv"
-        
+
     elif report_type == "feedback":
         feedbacks = db.query(Feedback).all()
         csv_content = generate_feedback_csv(feedbacks)
         filename = "community_feedback.csv"
-        
+
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid report type. Allowed: summary, pending, resolved, department, feedback"
         )
-        
+
     # Return as StreamingResponse
     stream = io.StringIO(csv_content)
     return StreamingResponse(

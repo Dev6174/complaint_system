@@ -1,6 +1,5 @@
-import pytest
-from unittest.mock import patch, AsyncMock
-from app.models import Issue, User
+from unittest.mock import AsyncMock, patch
+
 
 def test_report_issue_and_suggest_classification(client, db_session):
     # Setup users
@@ -12,7 +11,7 @@ def test_report_issue_and_suggest_classification(client, db_session):
     # Test categorization Suggestion (MOCK External Failure -> Fallback to keyword)
     with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
         mock_post.side_effect = Exception("Connection Refused")
-        
+
         suggest_res = client.post(
             "/api/issues/suggest-classification",
             data={"title": "Severe water leakage in main street", "description": "There is water bursting from the pipes and flooding the road."},

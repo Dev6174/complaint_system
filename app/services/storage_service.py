@@ -1,8 +1,7 @@
 # pyrefly: ignore [missing-import]
-import os
 import logging
+import os
 import uuid
-from typing import Optional
 
 logger = logging.getLogger("complaint_system.storage")
 

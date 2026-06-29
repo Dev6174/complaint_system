@@ -1,16 +1,24 @@
 # pyrefly: ignore [missing-import]
 import os
 import re
-from fastapi import FastAPI, Request, Response, HTTPException, status
+
+from fastapi import FastAPI, HTTPException, Request, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import settings
 from app.logging_config import configure_logging
-from app.database import engine, Base
-from app.routers import auth, issues, verification, departments, feedback, leaderboard, audit, analytics
-from app.services.storage_service import is_s3_enabled, get_file_url
+from app.routers import (
+    analytics,
+    audit,
+    auth,
+    departments,
+    feedback,
+    issues,
+    leaderboard,
+    verification,
+)
+from app.services.storage_service import get_file_url, is_s3_enabled
 
 # Configure structured logging
 configure_logging()

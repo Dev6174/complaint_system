@@ -1,24 +1,24 @@
 # pyrefly: ignore [missing-import]
 import csv
 import io
-from typing import List, Any
-from sqlalchemy.orm import Session
-from app.models import Issue, Feedback, User
 
-def generate_issues_csv(issues: List[Issue]) -> str:
+from app.models import Feedback, Issue
+
+
+def generate_issues_csv(issues: list[Issue]) -> str:
     """
     Generates a CSV string representing the list of issues.
     """
     output = io.StringIO()
     writer = csv.writer(output)
-    
+
     # Header
     writer.writerow([
-        "Issue ID", "Reporter ID", "Title", "Category", "Priority", 
-        "Latitude", "Longitude", "Status", "Verification Count", 
+        "Issue ID", "Reporter ID", "Title", "Category", "Priority",
+        "Latitude", "Longitude", "Status", "Verification Count",
         "Assigned Department", "Resolved At", "Created At"
     ])
-    
+
     for issue in issues:
         writer.writerow([
             issue.id,
@@ -34,18 +34,18 @@ def generate_issues_csv(issues: List[Issue]) -> str:
             issue.resolved_at.isoformat() if issue.resolved_at else "None",
             issue.created_at.isoformat()
         ])
-        
+
     return output.getvalue()
 
-def generate_department_csv(stats: List[dict]) -> str:
+def generate_department_csv(stats: list[dict]) -> str:
     """
     Generates CSV string for department performance summaries.
     """
     output = io.StringIO()
     writer = csv.writer(output)
-    
+
     writer.writerow(["Department", "Total Issues", "Resolved Issues", "Pending Issues", "Average Rating"])
-    
+
     for row in stats:
         writer.writerow([
             row.get("department"),
@@ -54,18 +54,18 @@ def generate_department_csv(stats: List[dict]) -> str:
             row.get("pending"),
             f"{row.get('avg_rating', 0.0):.2f}"
         ])
-        
+
     return output.getvalue()
 
-def generate_feedback_csv(feedbacks: List[Feedback]) -> str:
+def generate_feedback_csv(feedbacks: list[Feedback]) -> str:
     """
     Generates CSV string for community feedback comments and ratings.
     """
     output = io.StringIO()
     writer = csv.writer(output)
-    
+
     writer.writerow(["Feedback ID", "Issue ID", "User ID", "Rating", "Comment", "Created At"])
-    
+
     for fb in feedbacks:
         writer.writerow([
             fb.id,
@@ -75,5 +75,5 @@ def generate_feedback_csv(feedbacks: List[Feedback]) -> str:
             fb.comment or "",
             fb.created_at.isoformat()
         ])
-        
+
     return output.getvalue()

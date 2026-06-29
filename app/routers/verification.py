@@ -2,10 +2,10 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
+from app.auth import get_current_user, verify_csrf
 from app.database import get_db
 from app.models import User
 from app.schemas import VerificationCreate, VerificationResponse
-from app.auth import get_current_user, verify_csrf
 from app.services.verification_service import submit_verification
 
 router = APIRouter(prefix="/api/verifications", tags=["Verifications"])

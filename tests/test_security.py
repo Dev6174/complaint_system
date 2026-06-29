@@ -1,5 +1,5 @@
-import pytest
 from io import BytesIO
+
 
 def test_csrf_protection(client, db_session):
     # Setup user
@@ -52,7 +52,7 @@ def test_file_upload_security(client, db_session):
 
     # Try uploading a disallowed shell script masked as image extension
     bad_file = BytesIO(b"#!/usr/bin/env python\nprint('hello')")
-    
+
     res = client.post(
         "/api/issues",
         data={

@@ -9,20 +9,20 @@
 #      or local route (disk) depending on backend.
 #   3. All other functions unchanged.
 
-import os
-import logging
 import json
-from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
+import logging
+import os
+from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import HTTPException, UploadFile, status
-from sqlalchemy import or_, desc, asc
+from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm import Session
 
-from app.models import User, Issue, AuditLog
+from app.models import AuditLog, Issue, User
 from app.services.audit_service import log_action
 from app.services.gamification import award_points
-from app.services.storage_service import save_file, get_file_url
+from app.services.storage_service import get_file_url, save_file
 
 logger = logging.getLogger("complaint_system.issues")
 
@@ -76,7 +76,7 @@ def validate_and_save_upload(file: UploadFile) -> str:
     return filename
 
 
-def get_attachment_url(filename: str, request_base_url: str = "") -> Optional[str]:
+def get_attachment_url(filename: str, request_base_url: str = "") -> str | None:
     """
     Returns a time-limited presigned URL (S3) or a local serve URL.
     Call this when building issue responses that include attachments.
@@ -99,8 +99,8 @@ def create_issue(
     priority: str,
     latitude: float,
     longitude: float,
-    attachment_filename: Optional[str],
-    ip_address: Optional[str],
+    attachment_filename: str | None,
+    ip_address: str | None,
 ) -> Issue:
     if not (-90.0 <= latitude <= 90.0) or not (-180.0 <= longitude <= 180.0):
         raise HTTPException(
@@ -158,15 +158,15 @@ def create_issue(
 
 def list_issues(
     db: Session,
-    search: Optional[str],
-    category: Optional[str],
-    priority: Optional[str],
-    status_filter: Optional[str],
+    search: str | None,
+    category: str | None,
+    priority: str | None,
+    status_filter: str | None,
     sort_by: str,
     order: str,
     page: int,
     limit: int,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     query = db.query(Issue)
 
     if category:
@@ -242,9 +242,9 @@ def get_issue(db: Session, issue_id: int) -> Issue:
 def update_issue(
     db: Session,
     issue_id: int,
-    update_data: Dict[str, Any],
+    update_data: dict[str, Any],
     current_user: User,
-    ip_address: Optional[str],
+    ip_address: str | None,
 ) -> Issue:
     issue = db.query(Issue).filter(Issue.id == issue_id).first()
     if not issue:
@@ -297,7 +297,7 @@ def resolve_issue(
     issue_id: int,
     resolution_notes: str,
     resolver: User,
-    ip_address: Optional[str],
+    ip_address: str | None,
 ) -> Issue:
     issue = db.query(Issue).filter(Issue.id == issue_id).first()
     if not issue:
@@ -307,10 +307,10 @@ def resolve_issue(
 
     issue.status = "Resolved"
     issue.resolution_notes = resolution_notes
-    issue.resolved_at = datetime.now(timezone.utc)
+    issue.resolved_at = datetime.now(UTC)
 
     reporter = db.query(User).filter(User.id == issue.reporter_id).first()
-    reporter_new_badges: List[str] = []
+    reporter_new_badges: list[str] = []
     if reporter:
         reporter_new_badges = award_points(db, reporter, "issue_resolved_bonus")
 
@@ -331,7 +331,7 @@ def resolve_issue(
     db.commit()
     db.refresh(issue)
 
-    from app.tasks.notification_task import send_notification, NOTIF_RESOLVED
+    from app.tasks.notification_task import NOTIF_RESOLVED, send_notification
     send_notification.delay(
         recipient_user_id=issue.reporter_id,
         event_type=NOTIF_RESOLVED,
@@ -350,7 +350,7 @@ def resolve_issue(
 # Issue history
 # ---------------------------------------------------------------------------
 
-def get_issue_history(db: Session, issue_id: int) -> List[Dict[str, Any]]:
+def get_issue_history(db: Session, issue_id: int) -> list[dict[str, Any]]:
     logs = (
         db.query(AuditLog)
         .filter(

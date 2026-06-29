@@ -3,16 +3,16 @@ import io
 from datetime import datetime, timedelta
 
 from celery.result import AsyncResult
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.auth import RoleChecker, get_current_user
 from app.database import get_db
-from app.models import User, Issue, Feedback
-from app.auth import get_current_user, RoleChecker
+from app.models import Issue, User
+from app.services.cache_service import get_cached, set_cached  # from Phase 2
 from app.tasks.report_task import generate_report
-from app.services.cache_service import get_cached, set_cached   # from Phase 2
 
 router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 

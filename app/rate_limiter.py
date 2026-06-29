@@ -1,12 +1,11 @@
 # pyrefly: ignore [missing-import]
 import time
 from collections import defaultdict
-from typing import Dict, List
-from fastapi import Request, HTTPException, status
-from app.config import settings
+
+from fastapi import HTTPException, Request, status
 
 # In-memory storage for rate limiting: key -> list of epoch timestamps
-_rate_limit_cache: Dict[str, List[float]] = defaultdict(list)
+_rate_limit_cache: dict[str, list[float]] = defaultdict(list)
 
 def is_rate_limited(key: str, max_requests: int, window_seconds: int) -> bool:
     """
@@ -14,15 +13,15 @@ def is_rate_limited(key: str, max_requests: int, window_seconds: int) -> bool:
     """
     now = time.time()
     timestamps = _rate_limit_cache[key]
-    
+
     # Filter out timestamps older than the window
     expired_limit = now - window_seconds
     timestamps = [t for t in timestamps if t > expired_limit]
     _rate_limit_cache[key] = timestamps
-    
+
     if len(timestamps) >= max_requests:
         return True
-        
+
     _rate_limit_cache[key].append(now)
     return False
 

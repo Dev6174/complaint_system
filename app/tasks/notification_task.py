@@ -1,6 +1,5 @@
 # pyrefly: ignore [missing-import]
 import logging
-from typing import Optional
 
 from app.worker import celery_app
 
@@ -26,7 +25,7 @@ def send_notification(
     event_type: str,
     issue_id: int,
     message: str,
-    extra: Optional[dict] = None,
+    extra: dict | None = None,
 ) -> dict:
     """
     Delivers an in-app notification to a specific user.
