@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint System — Smart Citizen Portal</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <!-- Leaflet CSS for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Custom Theme styles -->
+    <link rel="stylesheet" href="/css/styles.css?v=2">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    
+    <header class="navbar">
+        <div class="logo">
+            <span class="material-icons-round">gavel</span>
+            <h1>Complaint System</h1>
+        </div>
+        <nav class="nav-links" id="nav-links">
+            <!-- Dynamically populated based on login state and role -->
+        </nav>
+        <div class="user-status" id="user-status-area">
+            <!-- Shows logged-in name, role, points, and Logout btn -->
+        </div>
+    </header>
+
+    <main class="app-container">
+        <!-- System Notifications Alert Box -->
+        <div id="alert-banner" class="alert-banner hidden"></div>
+
+        <!-- AUTH VIEW (Login/Signup) -->
+        <section id="view-auth" class="view-section active">
+            <div class="auth-card glass-panel">
+                <div class="tabs">
+                    <button class="tab-btn active" id="btn-tab-login" onclick="switchAuthTab('login')">Login</button>
+                    <button class="tab-btn" id="btn-tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="form-login" class="auth-form" onsubmit="handleLogin(event)">
+                    <h2>Welcome Back</h2>
+                    <p class="subtitle">Report and verify community issues to keep our neighborhood clean.</p>
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">email</span>
+                        <input type="email" id="login-email" placeholder="Email Address" required>
+                    </div>
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="login-password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-login">Sign In</button>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="form-signup" class="auth-form hidden" onsubmit="handleSignup(event)">
+                    <h2>Create Account</h2>
+                    <p class="subtitle">Join as a Citizen to earn points and help your community.</p>
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">person</span>
+                        <input type="text" id="signup-name" placeholder="Full Name" required>
+                    </div>
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">email</span>
+                        <input type="email" id="signup-email" placeholder="Email Address" required>
+                    </div>
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="signup-password" placeholder="Password (min 8 chars)" required minlength="8">
+                    </div>
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">badge</span>
+                        <select id="signup-role">
+                            <option value="Citizen">Citizen</option>
+                            <option value="Staff">Staff (Department Agent)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-signup">Register</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- DASHBOARDS -->
+        
+        <!-- CITIZEN VIEW -->
+        <section id="view-citizen" class="view-section hidden">
+            <div class="grid-layout">
+                <!-- Reporting Panel -->
+                <div class="glass-panel main-col">
+                    <div class="panel-header">
+                        <span class="material-icons-round text-primary">campaign</span>
+                        <h2>Report a Community Issue</h2>
+                    </div>
+                    <form id="form-report" onsubmit="submitIssue(event)">
+                        <div class="input-group-vertical">
+                            <label for="report-title">Issue Title</label>
+                            <input type="text" id="report-title" placeholder="Brief descriptive title (e.g., Water leakage outside gate)" required minlength="5">
+                        </div>
+                        <div class="input-group-vertical">
+                            <label for="report-description">Description</label>
+                            <textarea id="report-description" rows="4" placeholder="Describe the problem, location details, etc." required minlength="10"></textarea>
+                        </div>
+                        
+                        <!-- Suggestion Box -->
+                        <div id="ai-suggestion-box" class="ai-box hidden">
+                            <div class="ai-header">
+                                <span class="material-icons-round">psychology</span>
+                                <strong>Automated Suggestion</strong>
+                            </div>
+                            <div id="ai-suggestion-content"></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group-vertical">
+                                <label for="report-category">Category</label>
+                                <select id="report-category" required>
+                                    <option value="Potholes">Potholes</option>
+                                    <option value="Water Leakage">Water Leakage</option>
+                                    <option value="Damaged Streetlights">Damaged Streetlights</option>
+                                    <option value="Waste Management">Waste Management</option>
+                                    <option value="Public Safety Hazards">Public Safety Hazards</option>
+                                    <option value="Infrastructure Problems">Infrastructure Problems</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="input-group-vertical">
+                                <label for="report-priority">Priority</label>
+                                <select id="report-priority" required>
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                    <option value="Urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Location coordinates picker -->
+                        <div class="input-group-vertical">
+                            <label>Geo-Location (Pick on the map or use GPS)</label>
+                            <div class="form-row inline-btns">
+                                <input type="number" step="any" id="report-lat" placeholder="Latitude" required readonly>
+                                <input type="number" step="any" id="report-lng" placeholder="Longitude" required readonly>
+                                <button type="button" class="btn btn-secondary btn-icon" onclick="getUserLocation()">
+                                    <span class="material-icons-round">my_location</span> Use GPS
+                                </button>
+                            </div>
+                            <div id="citizen-picker-map" class="mini-map"></div>
+                        </div>
+
+                        <!-- File Upload -->
+                        <div class="input-group-vertical">
+                            <label for="report-file">Attach Photo/Video (Max 10MB)</label>
+                            <input type="file" id="report-file" accept="image/*,video/mp4">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="btn-submit-issue">Submit Issue</button>
+                    </form>
+                </div>
+
+                <!-- Citizen stats sidebar -->
+                <div class="sidebar">
+                    <div class="glass-panel gamified-stats">
+                        <h3>Your Profile</h3>
+                        <div class="points-circle">
+                            <span class="points-num" id="citizen-points">0</span>
+                            <span class="points-lbl">Points</span>
+                        </div>
+                        <h4>Unlocked Badges</h4>
+                        <div class="badges-container" id="citizen-badges">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="glass-panel verify-feed">
+                        <h3>Verify Community Reports</h3>
+                        <p class="small-text">Confirm other citizen issues. Need 5 validations to escalate department dispatch.</p>
+                        <div id="verify-list" class="mini-feed-list">
+                            <!-- Populated with issues awaiting verification -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ISSUES FEED & LIST VIEW -->
+        <section id="view-issues" class="view-section hidden">
+            <div class="glass-panel">
+                <div class="panel-header space-between">
+                    <h2>Community Issues Database</h2>
+                    <div class="filters">
+                        <input type="text" id="filter-search" placeholder="Search title or ID..." oninput="fetchIssuesList()">
+                        <select id="filter-category" onchange="fetchIssuesList()">
+                            <option value="">All Categories</option>
+                            <option value="Potholes">Potholes</option>
+                            <option value="Water Leakage">Water Leakage</option>
+                            <option value="Damaged Streetlights">Damaged Streetlights</option>
+                            <option value="Waste Management">Waste Management</option>
+                            <option value="Public Safety Hazards">Public Safety Hazards</option>
+                            <option value="Infrastructure Problems">Infrastructure Problems</option>
+                        </select>
+                        <select id="filter-status" onchange="fetchIssuesList()">
+                            <option value="">All Statuses</option>
+                            <option value="Open">Open</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="Closed">Closed</option>
+                            <option value="Reopened">Reopened</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table class="issue-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Verifications</th>
+                            <th>Department</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="issue-table-body">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+                <div class="pagination" id="issues-pagination">
+                    <!-- Pagination buttons -->
+                </div>
+            </div>
+        </section>
+
+        <!-- STAFF VIEW -->
+        <section id="view-staff" class="view-section hidden">
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <span class="material-icons-round text-primary">engineering</span>
+                    <h2>Staff Resolution Dashboard</h2>
+                </div>
+                <div class="grid-layout-two">
+                    <!-- Assignments list -->
+                    <div class="staff-col">
+                        <h3>Department Assignments</h3>
+                        <div id="staff-issue-list" class="feed-list">
+                            <!-- Assigned issues loaded here -->
+                        </div>
+                    </div>
+                    <!-- Details & Resolution actions -->
+                    <div class="staff-col glass-subpanel" id="staff-resolution-panel">
+                        <p class="select-hint">Select an issue from the list to update its status or post resolution notes.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- IMPACT DASHBOARD & ANALYTICS -->
+        <section id="view-dashboard" class="view-section hidden">
+            <div class="metrics-grid" id="dashboard-metrics">
+                <!-- Status counters populated here -->
+            </div>
+            
+            <div class="grid-layout-two">
+                <!-- Map View -->
+                <div class="glass-panel">
+                    <h3>Incident Map</h3>
+                    <div id="dashboard-map" class="large-map"></div>
+                </div>
+                
+                <!-- Insights and Exports -->
+                <div class="glass-panel">
+                    <h3>Predictive & Health Insights</h3>
+                    <div id="at-risk-insights" class="insights-container">
+                        <!-- Flagged items and average resolution predictions -->
+                    </div>
+
+                    <div class="export-reports-section">
+                        <h3>Export CSV Reports</h3>
+                        <div class="export-buttons">
+                            <button onclick="downloadReport('summary')" class="btn btn-secondary"><span class="material-icons-round">download</span> All Summary</button>
+                            <button onclick="downloadReport('pending')" class="btn btn-secondary"><span class="material-icons-round">download</span> Pending Issues</button>
+                            <button onclick="downloadReport('resolved')" class="btn btn-secondary"><span class="material-icons-round">download</span> Resolved Issues</button>
+                            <button onclick="downloadReport('department')" class="btn btn-secondary"><span class="material-icons-round">download</span> Dept Performance</button>
+                            <button onclick="downloadReport('feedback')" class="btn btn-secondary"><span class="material-icons-round">download</span> User Feedbacks</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEADERBOARD -->
+        <section id="view-leaderboard" class="view-section hidden">
+            <div class="glass-panel narrow-panel">
+                <div class="panel-header">
+                    <span class="material-icons-round text-primary">emoji_events</span>
+                    <h2>Citizen Leaderboard</h2>
+                </div>
+                <p class="subtitle">Our top community champions helping build a better city.</p>
+                <div class="leaderboard-list" id="leaderboard-items">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- AUDIT TRAIL (Admin only) -->
+        <section id="view-audit" class="view-section hidden">
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <span class="material-icons-round text-primary">history</span>
+                    <h2>Immutable Action Audit Trail</h2>
+                </div>
+                <p class="subtitle">Admins check this append-only log to trace state updates for transparency.</p>
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Operator</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-table-body">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ISSUE DETAILS MODAL (Popups for details, feedbacks and history) -->
+        <div id="issue-modal" class="modal hidden">
+            <div class="modal-content glass-panel">
+                <span class="close-modal-btn" onclick="closeIssueModal()">&times;</span>
+                <div id="modal-body-content"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Leaflet JS for Maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- SPA Logic files -->
+    <script src="/js/api.js?v=2"></script>
+    <script src="/js/map.js?v=2"></script>
+    <script src="/js/app.js?v=2"></script>
+</body>
+</html>
