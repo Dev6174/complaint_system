@@ -8,6 +8,11 @@ from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.logging_config import configure_logging
+from app.middleware.logging_middleware import (
+    StructuredLoggingMiddleware,
+    configure_json_logging,
+)
+from app.observability import init_prometheus, init_sentry
 from app.routers import (
     analytics,
     audit,
@@ -22,9 +27,7 @@ from app.services.storage_service import get_file_url, is_s3_enabled
 
 # Configure structured logging
 configure_logging()
-
-# Schema managed by Alembic — create_all removed
-# Base.metadata.create_all(bind=engine)
+configure_json_logging()
 
 app = FastAPI(
     title="Complaint System",
@@ -32,8 +35,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Phase 6 — Sentry + Prometheus
+init_sentry(app)
+init_prometheus(app)
+app.add_middleware(StructuredLoggingMiddleware)
+
 # ---------------------------------------------------------------------------
-# CORS — Phase 0: explicit origin allowlist, not wildcard
+# CORS
 # ---------------------------------------------------------------------------
 _raw_origins = os.getenv(
     "ALLOWED_ORIGINS",
@@ -49,11 +57,8 @@ app.add_middleware(
     allow_headers=["Content-Type", "X-CSRF-Token", "Authorization"],
 )
 
-
 # ---------------------------------------------------------------------------
-# Security headers — Phase 0: tightened CSP, HSTS, Permissions-Policy
-# Phase 0 fix 5: Swagger UI / ReDoc get a scoped CSP so cdn.jsdelivr.net
-# assets load correctly without weakening the app-wide policy.
+# Security headers
 # ---------------------------------------------------------------------------
 DOCS_PATHS = ("/docs", "/redoc", "/openapi.json")
 
@@ -72,7 +77,6 @@ async def add_security_headers(request: Request, call_next):
     )
 
     if request.url.path in DOCS_PATHS:
-        # Swagger UI / ReDoc only — looser CSP scoped to docs paths
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
@@ -84,7 +88,6 @@ async def add_security_headers(request: Request, call_next):
             "form-action 'self';"
         )
     else:
-        # App-wide CSP — unsafe-eval removed, object-src/base-uri/form-action added
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://unpkg.com; "
@@ -111,10 +114,7 @@ app.include_router(analytics.router)
 
 
 # ---------------------------------------------------------------------------
-# File serving — Phase 4: presigned URL redirect when S3 active
-# Local mode: validates filename and serves from disk (unchanged behaviour)
-# S3 mode: generates presigned URL and returns 302 redirect — file data
-#   never passes through this server, files stay private at rest
+# File serving
 # ---------------------------------------------------------------------------
 @app.get("/uploads/{filename}")
 def serve_upload(filename: str):
@@ -137,7 +137,7 @@ def serve_upload(filename: str):
     return FileResponse(file_path)
 
 
-# Serve Frontend Static Files — must come last to avoid shadowing API routes
+# Serve Frontend
 os.makedirs("static", exist_ok=True)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
