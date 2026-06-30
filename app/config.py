@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_MAX_REQUESTS: int = 60
     RATE_LIMIT_LOGIN_MAX: int = 5
     RATE_LIMIT_ISSUE_MAX: int = 5
-    
+
     # Sentry
     SENTRY_DSN: str = ""
 
