@@ -95,7 +95,7 @@ def get_dashboard_data(
         "resolution_predictions": predictions,
         "at_risk_issues": at_risk_list,
     }
-    set_cached(DASHBOARD_CACHE_KEY, result, ttl=DASHBOARD_TTL)
+    set_cached(DASHBOARD_CACHE_KEY, result, ttl_seconds=DASHBOARD_TTL)
     return result
 
 

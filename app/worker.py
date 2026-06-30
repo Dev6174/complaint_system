@@ -1,5 +1,6 @@
 # pyrefly: ignore [missing-import]
 import logging
+import ssl
 
 from celery import Celery
 
@@ -12,10 +13,20 @@ logger = logging.getLogger("complaint_system.worker")
 # Broker: Redis (same Upstash instance used for caching in Phase 2)
 # Backend: Redis (stores task results so the API can poll them)
 # ---------------------------------------------------------------------------
+
+# Upstash uses rediss:// (TLS) — Celery requires explicit SSL cert behaviour
+_redis_ssl_options = (
+    {"ssl_cert_reqs": ssl.CERT_NONE}
+    if settings.REDIS_URL.startswith("rediss://")
+    else {}
+)
+
 celery_app = Celery(
     "complaint_system",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
+    broker_use_ssl=_redis_ssl_options,
+    redis_backend_use_ssl=_redis_ssl_options,
     include=[
         "app.tasks.classification_task",
         "app.tasks.notification_task",
