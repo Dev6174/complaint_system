@@ -72,7 +72,7 @@ def validate_and_save_upload(file: UploadFile) -> str:
 
     # Delegate storage to the storage service — local disk or S3/MinIO
     filename = save_file(content, ext)
-    logger.info("File upload validated and saved", extra={"filename": filename, "ext": ext})
+    logger.info("File upload validated and saved", extra={"uploaded_filename": filename, "ext": ext})
     return filename
 
 
