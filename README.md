@@ -1,83 +1,191 @@
 # Complaint System
 
-A production-grade, full-stack web application designed for citizens to report local community issues, have them verified, assign departments, and track resolution metrics, backed by a gamified citizen-engagement system.
+A full-stack complaint management platform built with **FastAPI** that allows citizens to report community issues, upload evidence, and track the progress of their complaints. The system also provides moderation tools, department management, analytics, and AI-assisted complaint categorisation.
+
+This project was built with a focus on security, maintainability, and real-world backend practices rather than just implementing CRUD operations.
 
 ---
 
-## 1. Prerequisites & Environment Setup
+## Features
 
-This project is built using Python 3.13 and SQLite.
-
-### Local Installation
-
-1. **Clone/extract the project** into your workspace.
-2. **Create the virtual environment**:
-   ```bash
-   python -m venv .venv
-   ```
-3. **Activate the virtual environment**:
-   - **Windows PowerShell**:
-     ```powershell
-     .venv\Scripts\Activate.ps1
-     ```
-   - **Git Bash / Linux / macOS**:
-     ```bash
-     source .venv/bin/activate
-     ```
-4. **Install all required dependencies**:
-   ```bash
-   .venv\Scripts\pip install -r requirements.txt
-   ```
+- User authentication using JWT
+- Role-based access control (Citizen, Moderator, Department, Admin)
+- Create, update and track complaints
+- Secure file uploads
+- AI-assisted complaint categorisation
+- Complaint verification workflow
+- Department assignment
+- Analytics and reporting
+- Citizen leaderboard
+- Audit logging
+- Prometheus metrics
+- Sentry integration
 
 ---
 
-## 2. Configuration Settings (`.env`)
+## Tech Stack
 
-Create a `.env` file in the root directory (a `.env.example` has been provided for reference). The application accepts the following environment variables:
+**Backend**
+- FastAPI
+- SQLAlchemy
+- Pydantic
+- Alembic
 
-```ini
-# Database URL
+**Frontend**
+- HTML
+- CSS
+- JavaScript
+- Leaflet.js
+
+**Database**
+- SQLite
+
+**Security**
+- JWT Authentication
+- bcrypt password hashing
+- CSRF protection
+- IDOR prevention
+- Secure file validation
+
+---
+
+## Getting Started
+
+### Clone the repository
+
+```bash
+git clone https://github.com/Dev6174/complaint_system.git
+
+cd complaint_system
+```
+
+### Create a virtual environment
+
+```bash
+python -m venv .venv
+```
+
+### Activate it
+
+Windows
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+Linux/macOS
+
+```bash
+source .venv/bin/activate
+```
+
+### Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Configuration
+
+Create a `.env` file in the project root.
+
+Example:
+
+```env
 DATABASE_URL=sqlite:///./complaint_system.db
 
-# JWT Security
-SECRET_KEY=super-secret-dev-key-change-in-production
+SECRET_KEY=your-secret-key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 
-# External AI Classification Service
-AI_CLASSIFIER_ENDPOINT=https://api.external-categorization.local/classify
-AI_CLASSIFIER_API_KEY=mock-api-key-here
+AI_CLASSIFIER_ENDPOINT=https://api.example.com/classify
+AI_CLASSIFIER_API_KEY=your-api-key
 
-# Verification settings
 VERIFICATION_THRESHOLD=5
 ```
 
 ---
 
-## 3. Running the Application
+## Running the project
 
-To launch the FastAPI server, run:
+Start the development server:
 
 ```bash
-.venv\Scripts\python -m uvicorn app.main:app --reload
+uvicorn app.main:app --reload
 ```
 
-Open your browser and navigate to **`http://127.0.0.1:8000`** to access the Smart Citizen Portal.
+The application will be available at:
+
+```
+http://127.0.0.1:8000
+```
+
+API documentation:
+
+```
+http://127.0.0.1:8000/docs
+```
 
 ---
 
-## 4. Running the Tests
-
-To execute the automated unit and integration tests (testing Auth, RBAC, IDOR, AI Fallback, and Upload Security), run:
+## Running tests
 
 ```bash
-.venv\Scripts\pytest -v
+pytest
+```
+
+The test suite covers authentication, RBAC, complaint APIs, upload security, AI fallback behaviour and verification workflows.
+
+---
+
+## Project Structure
+
+```text
+app/
+├── routers/
+├── services/
+├── middleware/
+├── observability/
+├── templates/
+├── static/
+└── main.py
+
+tests/
+migrations/
+uploads/
 ```
 
 ---
 
-## 5. System Design Details
+## Screenshots
 
-- **Backend Stack**: Built on **FastAPI** for high performance, utilizing **SQLAlchemy** for database parameterization and **Pydantic** for schemas.
-- **Frontend SPA**: Handled as a Single-Page Application using vanilla **HTML5**, **ES6 JavaScript**, and **CSS3 variables** (implementing a modern dark-mode glassmorphic interface). Mapping features utilize **Leaflet.js**.
-- **Security First**: Employs double-submit cookie CSRF validation, bcrypt hashing, object-level check authorizations, magic-byte upload filtering, and structured immutable audit logging.
+### Dashboard
+
+_Add screenshot_
+
+### Complaint Portal
+
+_Add screenshot_
+
+### API Documentation
+
+_Add screenshot_
+
+---
+
+## Future Improvements
+
+- PostgreSQL support
+- Docker deployment
+- Redis caching
+- Email notifications
+- Real-time updates
+- Mobile application
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
