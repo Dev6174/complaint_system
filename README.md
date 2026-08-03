@@ -1,4 +1,7 @@
 <div align="center">
+<p align="center">
+  <img src="docs/images/banner.png" width="100%" alt="Complaint Management System Banner">
+</p>
 
 ## 🏛️ Complaint Management System
 
@@ -239,6 +242,7 @@ complaint_system/
 ## License
 This project is licensed under the MIT License. See the `LICENSE` file for details.
 
+---
 ---
 
 ## 📌 Project Status
